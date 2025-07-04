@@ -5,7 +5,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest   # lub windows/linux, ale to już mało istotne
+    container:
+      image: ubuntu:22.04
+      options: --user root    # żeby mieć uprawnienia do apt-get i make
 
     steps:
       - uses: actions/checkout@v4
