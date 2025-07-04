@@ -1,0 +1,43 @@
+############ stage 1 – build ############
+FROM --platform=$BUILDPLATFORM ubuntu:24.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential pkg-config libtool autoconf automake \
+        git ca-certificates curl gnupg \
+        libboost-all-dev libzmq3-dev libdb++-dev libssl-dev \
+        ccache && \
+    rm -rf /var/lib/apt/lists/*
+
+# flaga naprawiająca _1/_2/_3 w Boost ≥ 1.81
+ARG CXXFLAGS="-DBOOST_BIND_GLOBAL_PLACEHOLDERS"
+
+WORKDIR /src
+RUN git clone --depth=1 https://github.com/terracoin/terracoin.git .
+
+RUN ./autogen.sh && \
+    ./configure \
+        CXXFLAGS="${CXXFLAGS}" \
+        --without-gui \
+        --enable-wallet \
+        --with-zmq \
+        --with-incompatible-bdb \
+        --with-incompatible-bdb \
+        --disable-tests \
+        --disable-bench && \
+    make -j$(nproc)
+
+############ stage 2 – runtime ############
+FROM --platform=linux/amd64 ubuntu:24.04
+
+COPY --from=builder /src/src/terracoind /usr/local/bin/terracoind
+
+# domyślna ścieżka danych będzie /data
+VOLUME ["/data"]
+WORKDIR /data
+
+EXPOSE 28332
+EXPOSE 13331
+
+ENTRYPOINT ["/usr/local/bin/terracoind"]
+CMD ["-daemon=0"]
