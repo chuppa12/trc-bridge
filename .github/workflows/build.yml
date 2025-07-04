@@ -9,6 +9,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Clone Terracoin source
+        run: |
+          git clone --depth=1 https://github.com/terracoin/terracoin.git .
+
       - name: Install dependencies
         run: |
           sudo apt-get update
