@@ -14,6 +14,15 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/terracoin/terracoin.git terracoin
 
+      - name: Apply Terracoin Core patches
+        run: |
+          # 1) Boost placeholders patch for validationinterface.cpp
+          sed -i '/validationinterface.h/a #include <boost\/bind\/bind.hpp>' terracoin/src/validationinterface.cpp
+          sed -i '/#include <boost\/bind\/bind.hpp>/a using namespace boost::placeholders;' terracoin/src/validationinterface.cpp
+
+          # 2) Include <deque> for httpserver.cpp
+          sed -i '/boost\/foreach.hpp/a #include <deque>' terracoin/src/httpserver.cpp
+
       - name: Install dependencies
         run: |
           sudo apt-get update
