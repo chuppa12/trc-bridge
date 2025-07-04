@@ -65,3 +65,11 @@ jobs:
         with:
           name: terracoind-x86_64
           path: terracoin/src/terracoind
+
+      - name: Upload Terracoin binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: terracoin-binaries
+          path: |
+            terracoin/src/terracoind
+            terracoin/src/terracoin-cli
