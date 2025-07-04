@@ -5,18 +5,19 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest   # lub windows/linux, ale to już mało istotne
+    runs-on: ubuntu-latest
     container:
       image: ubuntu:22.04
-      options: --user root    # żeby mieć uprawnienia do apt-get i make
+      options: --user root
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Install Git
         run: |
           apt-get update
-          apt-get install -y git
+          apt-get install -y git wget build-essential
 
       - name: Clone Terracoin source
         run: |
@@ -27,31 +28,43 @@ jobs:
           # 1) Boost placeholders patch for validationinterface.cpp
           sed -i '/validationinterface.h/a #include <boost\/bind\/bind.hpp>' terracoin/src/validationinterface.cpp
           sed -i '/#include <boost\/bind\/bind.hpp>/a using namespace boost::placeholders;' terracoin/src/validationinterface.cpp
-
           # 2) Include <deque> for httpserver.cpp
           sed -i '/boost\/foreach.hpp/a #include <deque>' terracoin/src/httpserver.cpp
 
-      - name: Install dependencies
+      - name: Install BerkeleyDB 4.8
+        run: |
+          cd /usr/local/src
+          wget http://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz
+          tar xzf db-4.8.30.NC.tar.gz
+          cd db-4.8.30.NC/build_unix
+          ../dist/configure --prefix=/usr/local/BerkeleyDB.4.8 --enable-cxx --disable-shared --with-pic
+          make -j$(nproc)
+          make install
+        # instalujemy BDB4.8 z myślą o wallet
+
+      - name: Install other dependencies
         run: |
           apt-get update
           apt-get install -y \
-            build-essential \
             pkg-config \
             libtool \
             autoconf \
             automake \
             libboost-all-dev \
             libzmq3-dev \
-            libdb++-dev \
             libssl-dev \
             libcurl4-openssl-dev
 
       - name: Configure & build
+        env:
+          BDB_PREFIX: /usr/local/BerkeleyDB.4.8
         run: |
           cd terracoin
           ./autogen.sh
+          PKG_CONFIG_PATH="$BDB_PREFIX/lib/pkgconfig" \
+          CXXFLAGS="-I$BDB_PREFIX/include -DBOOST_BIND_GLOBAL_PLACEHOLDERS" \
+          LDFLAGS="-L$BDB_PREFIX/lib" \
           ./configure \
-            CXXFLAGS="-DBOOST_BIND_GLOBAL_PLACEHOLDERS" \
             --without-gui \
             --enable-wallet \
             --with-zmq \
