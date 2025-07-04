@@ -10,9 +10,19 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y \
-          build-essential pkg-config libtool autoconf automake \
-          libboost-all-dev libzmq3-dev libdb++-dev libssl-dev libcurl4-openssl-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            libtool \
+            autoconf \
+            automake \
+            libboost-all-dev \
+            libzmq3-dev \
+            libdb++-dev \
+            libssl-dev \
+            libcurl4-openssl-dev
 
       - name: Configure & build
         run: |
