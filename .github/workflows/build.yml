@@ -11,7 +11,7 @@ jobs:
 
       - name: Clone Terracoin source
         run: |
-          git clone --depth=1 https://github.com/terracoin/terracoin.git .
+          git clone --depth=1 https://github.com/terracoin/terracoin.git terracoin
 
       - name: Install dependencies
         run: |
@@ -45,4 +45,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terracoind-x86_64
-          path: src/terracoind
+          path: terracoin/src/terracoind
