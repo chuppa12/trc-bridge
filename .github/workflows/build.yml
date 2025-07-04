@@ -13,8 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-- name: Install Git
-      run: |
+      - name: Install Git
+        run: |
         apt-get update
         apt-get install -y git
 
