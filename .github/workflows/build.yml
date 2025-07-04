@@ -28,7 +28,7 @@ jobs:
           make -j$(nproc)
 
       - name: Upload terracoind binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: terracoind-x86_64
           path: src/terracoind
